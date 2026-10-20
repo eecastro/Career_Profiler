@@ -193,13 +193,14 @@
     <div class="hero">
       <div>
         <h1>What kind of work might you enjoy?</h1>
-        <p>Rate 48 everyday work activities by how much you’d like doing them. You’ll get a three-letter interest code and a list of careers people with that code often enjoy.</p>
+        <p>Rate 48 everyday activities by how much you enjoy doing them, or think you would. You’ll get a three-letter interest code and a list of careers people with that code often enjoy.</p>
       </div>
       <svg id="hero-hex" viewBox="-170 -150 340 300" role="img" aria-label="The six interest types arranged in a hexagon: Realistic, Investigative, Artistic, Social, Enterprising, Conventional"></svg>
     </div>
     <ul class="facts">
       <li>Takes about 10 minutes.</li>
-      <li>Think only about whether you’d <em>like</em> the activity, not whether you’re good at it, have training for it, or how much it pays.</li>
+      <li>Think only about whether you <em>enjoy</em> the activity, not whether you’re good at it.</li>
+      <li>If you haven’t tried something, picture yourself doing it and go with your gut.</li>
       <li>Completely anonymous: no names, no sign-in, nothing saved. Your answers never leave this device, and closing the page erases them.</li>
     </ul>
     <button id="start" type="button">Start the questions</button>
@@ -211,7 +212,8 @@
       <div class="progress-row"><span id="page-label">Page 1 of 8</span><span id="count-label">0 of 48 answered</span></div>
       <div class="bar" role="progressbar" aria-label="Questions answered" aria-valuemin="0" aria-valuemax="48" aria-valuenow="0" id="progressbar"><span id="bar-fill"></span></div>
     </div>
-    <h2 id="quiz-heading" class="prompt" tabindex="-1">How much would you like doing each activity?</h2>
+    <h2 id="quiz-heading" class="prompt" tabindex="-1">How much do you enjoy each activity?</h2>
+    <p class="muted" style="margin-top:-.75rem">Haven’t tried it? Imagine doing it and go with your gut.</p>
     <div id="items"></div>
     <p class="error" id="error" role="alert"></p>
     <div class="nav">
@@ -338,14 +340,69 @@
     EC: ["Financial advisor", "Bank branch manager", "Insurance sales agent", "Project manager", "Logistics manager"]
   };
 
-  // Eight activities per type (original items modeled on O*NET-style activity statements)
+  // Eight activities per type. These are everyday activities most teenagers have tried,
+  // each standing in for a kind of adult work (noted in the comments).
   var ITEMS = {
-    R: ["Repair a bicycle or a small engine", "Build shelves or furniture out of wood", "Operate heavy machinery like a forklift or bulldozer", "Install wiring or light fixtures in a house", "Plant and care for crops or trees", "Assemble electronic parts", "Maintain trails in a state park", "Fix a leaking pipe"],
-    I: ["Study how a disease spreads through a population", "Run experiments in a laboratory", "Look for patterns in a large set of data", "Investigate what caused a fire or an accident", "Research how the brain stores memories", "Come up with a theory to explain something in nature", "Study the movement of planets and stars", "Test water or soil samples for pollution"],
-    A: ["Write a short story or a script", "Design a logo or a poster", "Play an instrument in a band", "Act in a play or a film", "Draw or paint portraits", "Compose music or make beats", "Take photographs for a magazine", "Design clothing or costumes"],
-    S: ["Teach children how to read", "Help someone recover from an injury through exercise", "Talk a friend through a hard time", "Volunteer at a community shelter", "Coach a youth sports team", "Care for patients in a hospital", "Lead a support group", "Explain a lesson to a classmate who is struggling"],
-    E: ["Start your own business", "Convince customers to buy a product", "Manage a team of workers", "Run for student government or public office", "Negotiate a deal or a contract", "Lead a fundraising campaign", "Pitch an idea to investors", "Manage a restaurant or a store"],
-    C: ["Keep the financial records for a business", "Organize files so anything can be found quickly", "Proofread documents for errors", "Build and keep up a spreadsheet", "Process invoices and payments", "Schedule appointments and manage a calendar", "Count and track inventory in a warehouse", "Enter information into a database accurately"]
+    R: [
+      "Fix something that broke at home, like a wobbly chair or a loose door handle",   // home repair, trades
+      "Put together furniture from a kit by following the diagram",                     // assembly, construction
+      "Fix a flat bike tire or a slipped bike chain",                                    // mechanics
+      "Do yard work like mowing, raking, or planting a garden",                          // agriculture, landscaping
+      "Build something with your hands, like a model, a birdhouse, or a set for a play", // carpentry, fabrication
+      "Take apart an old gadget to see how it works inside",                             // electronics, machinery
+      "Set up a TV, gaming console, or speakers and get all the cables working",          // electrical, installation
+      "Spend a day hiking, camping, or working outside"                                  // outdoor work, forestry
+    ],
+    I: [
+      "Do a science lab and figure out what the results mean",                           // laboratory research
+      "Watch a documentary or read about how something in nature or space works",        // natural sciences
+      "Solve a tricky puzzle, like a logic puzzle, Sudoku, or an escape room",           // analytical problem solving
+      "Look up the facts to check whether a viral post online is true",                  // investigation
+      "Compare stats to figure out which player, team, or product is really the best",   // data analysis
+      "Learn how the human body works, like why muscles get sore or how vaccines work",  // health science, medicine
+      "Keep working on a hard math problem until you crack it",                          // math, engineering
+      "Figure out why your phone or computer isn’t working by testing different fixes"   // tech troubleshooting, IT
+    ],
+    A: [
+      "Write a story, poem, song lyrics, or fan fiction",                                // writing
+      "Design a poster, flyer, or graphic for a club or event",                          // graphic design
+      "Sing, play an instrument, or make beats, even just for fun",                      // music
+      "Act in a school play, a skit, or a video",                                        // performing arts
+      "Draw, paint, or sketch",                                                          // fine art, illustration
+      "Edit a video with music and effects to post online",                              // film and media
+      "Take photos and edit them until they look just right",                            // photography
+      "Decorate your room or put together outfits in your own style"                     // interior and fashion design
+    ],
+    S: [
+      "Help a younger kid or sibling with their homework",                               // teaching
+      "Explain something to a classmate who’s confused",                                 // tutoring, instruction
+      "Listen to a friend who’s having a hard time and help them feel better",           // counseling
+      "Volunteer at a food bank, shelter, or community event",                           // social services
+      "Babysit or work as a camp counselor",                                             // child care, youth work
+      "Help younger players learn a skill in a sport or activity",                       // coaching
+      "Take care of a family member or friend who is sick or hurt",                      // nursing, health care
+      "Show a new student around and help them fit in"                                   // advising, community work
+    ],
+    E: [
+      "Sell things, like fundraiser items, baked goods, or stuff you don’t use anymore", // sales
+      "Run for class office or a leadership role in a club",                             // politics, leadership
+      "Convince your friends to go along with your plan",                                // persuasion, marketing
+      "Be the captain of a team or the leader of a group project",                       // management
+      "Promote an event and get lots of people to show up",                              // marketing, public relations
+      "Start a side hustle, like mowing lawns, reselling clothes, or making things to sell", // entrepreneurship
+      "Argue for your side in a debate or in front of a group",                          // law, public speaking
+      "Negotiate for something you want, like a better price or a later curfew"          // negotiation, business
+    ],
+    C: [
+      "Keep track of your money with a budget or an app",                                // accounting, finance
+      "Organize your files, photos, or notes so you can find anything fast",             // records management
+      "Proofread a paper for spelling and grammar mistakes",                             // editing, quality control
+      "Make a spreadsheet or chart to keep track of information",                        // data management
+      "Plan out a schedule so everything gets done on time",                             // administration, logistics
+      "Keep track of sales and supplies at a concession stand or school store",          // inventory, retail operations
+      "Fill out a form or application carefully so every detail is correct",            // clerical, compliance
+      "Keep score or track stats for a team or a game"                                   // record keeping, statistics
+    ]
   };
 
   var SCALE = ["Strongly dislike", "Dislike", "Unsure", "Like", "Strongly like"];
