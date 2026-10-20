@@ -1,6 +1,6 @@
 # Career Interest Explorer
 
-A free, anonymous career interest quiz for students, built on John Holland's RIASEC model of vocational interests. Students rate 48 everyday work activities, receive a three-letter interest code, and see the fields and careers that people with similar interests often enjoy. It runs entirely in the browser as a simple static website, so it can be hosted for free on GitHub Pages.
+A free, anonymous career interest quiz for students, built on John Holland's RIASEC model of vocational interests. Students rate 48 everyday activities drawn from home, school, sports, clubs, and hobbies, receive a three-letter interest code, and see the fields and careers that people with similar interests often enjoy. It runs entirely in the browser as a simple static website, so it can be hosted for free on GitHub Pages.
 
 This is an informal approximation of the O*NET® Interest Profiler. It is meant for career exploration and conversation, not for formal assessment or placement.
 
@@ -18,6 +18,21 @@ Holland's theory sorts work interests into six types, often called RIASEC:
 | C | Conventional | Organizers | Data, records, detail, clear procedures |
 
 Students rate each activity on a five-point scale from "Strongly dislike" to "Strongly like." There are eight activities for each type, presented six to a page so that every page has one activity from each type. Each type is scored from 8 to 40, and the three highest scores form the student's interest code (for example, **SAI**).
+
+### About the questions
+
+Most interest inventories, including the O*NET Interest Profiler, describe adult job tasks such as repairing an engine or managing a store. Many 18-year-olds have never done these things and have to guess whether they would enjoy them. This page instead uses activities that most teenagers have already tried, each one standing in for a kind of adult work that draws on the same interest:
+
+| Instead of this adult task | Students rate this familiar activity | Type |
+|---|---|---|
+| Repair an engine | Fix a flat bike tire or a slipped bike chain | Realistic |
+| Run experiments in a laboratory | Do a science lab and figure out what the results mean | Investigative |
+| Design a logo for a company | Design a poster, flyer, or graphic for a club or event | Artistic |
+| Teach children to read | Help a younger kid or sibling with their homework | Social |
+| Start a business | Start a side hustle, like mowing lawns or reselling clothes | Enterprising |
+| Keep financial records for a business | Keep track of your money with a budget or an app | Conventional |
+
+Comments next to each activity in `index.html` note the kind of work it represents. Students who haven't tried a particular activity are told to imagine doing it and go with their gut.
 
 The results page shows:
 
@@ -55,6 +70,16 @@ The only outside link is an optional pointer to the official O*NET Interest Prof
 | `careers.js` | The career profiles shown in the pop-ups |
 | `README.md` | This file |
 
+## Setting it up on GitHub Pages
+
+1. Sign in to GitHub and create a new **public** repository (for example, `career-interest-explorer`).
+2. Upload `index.html`, `careers.js`, and `README.md` to the top level of the repository. Keep the file names exactly as they are.
+3. Go to the repository's **Settings**, then **Pages**.
+4. Under "Build and deployment," set the source to **Deploy from a branch**, choose the `main` branch and the `/ (root)` folder, and select **Save**.
+5. After a minute or two, the site will be live at `https://YOUR-USERNAME.github.io/REPOSITORY-NAME/`. Share that link with students, or turn it into a QR code for the classroom.
+
+The page also works without GitHub. You can open `index.html` directly from a computer or a shared drive, as long as `careers.js` sits in the same folder.
+
 ## Trying it out
 
 To see a results page without answering all 48 questions, add `#demo` to the end of the address (for example, `https://YOUR-USERNAME.github.io/REPOSITORY-NAME/#demo`). This fills in random answers and jumps straight to the results. Remove `#demo` before sharing the link with students.
@@ -63,7 +88,7 @@ To see a results page without answering all 48 questions, add `#demo` to the end
 
 All the content is plain text inside the two files, so it can be edited directly on GitHub with the pencil icon. No programming tools are needed.
 
-- **Activity statements** are in the `ITEMS` list near the top of the script in `index.html`. Each type needs the same number of statements.
+- **Activity statements** are in the `ITEMS` list near the top of the script in `index.html`. Each type needs the same number of statements. When adding one, choose something most of your students have actually done, and note in a comment the kind of work it stands in for.
 - **Type descriptions, fields, and example careers** are in the `INFO` list in `index.html`.
 - **Careers that combine two types** are in the `BLENDS` list in `index.html`.
 - **Career profiles** are in `careers.js`. Each career listed in `index.html` should have a matching entry here, spelled exactly the same. If a profile is missing, the pop-up says that no profile has been written yet rather than breaking the page.
@@ -75,7 +100,8 @@ After editing, GitHub Pages updates the live site automatically within a few min
 
 Before students begin, it helps to say:
 
-- This measures what you might **enjoy**, not what you're good at or what you've been trained to do.
+- This measures what you **enjoy**, not what you're good at.
+- If you haven't done something, imagine doing it and go with your gut.
 - There are no right or wrong answers, and no type is better than another.
 - Don't think about pay, education, or whether a job seems realistic. Just ask, "Would I like doing this?"
 - Choose "Unsure" if you truly can't decide, but try to lean one way when you can.
@@ -84,12 +110,13 @@ When discussing results:
 
 - Treat the code as a starting point for exploring, not a label or a verdict. Interests often shift, especially between ages 16 and 25.
 - Encourage students to look at all three letters, not just the first. The combination often says more than any single type.
+- Some activities depend on opportunity. A student who has never had a garden, a bike, or a club to lead may rate those activities lower simply from lack of exposure. Ask students which activities they had to imagine, and treat those ratings more lightly.
 - Students with very even scores are not "doing it wrong." They may have broad interests or limited exposure to the kinds of work described. Hands-on experiences like job shadowing, volunteering, or part-time work can help clarify them.
 - Ask students to pick one career they had never heard of and one they had already considered, then compare what the profiles say about each.
 
 ## Limitations
 
-- **This is not the official O*NET Interest Profiler.** The 48 activity statements were written for this project in the style of O*NET work-activity items. They have not been tested for reliability or validity, and scores should not be compared with results from the official tool or other inventories.
+- **This is not the official O*NET Interest Profiler.** The 48 activity statements were written for this project in the style of O*NET work-activity items. They describe everyday teenage activities rather than the adult work tasks used in validated inventories, and they have not been tested for reliability or validity. Scores should not be compared with results from the official tool or other inventories.
 - **Career matches are illustrative.** The careers listed for each type and combination are examples chosen to show the range of work connected to each interest area. They are not computed matches from occupational data.
 - **Career profiles are general summaries.** Training paths describe typical routes in the United States and can vary by state, employer, and over time. Pay and job outlook are intentionally left out because they change frequently. Have a counselor review the profiles periodically.
 - **Interests are only one part of career planning.** Values, skills, life circumstances, and real-world experience all matter.
@@ -108,7 +135,7 @@ The six interest types and their hexagonal arrangement come from the work of psy
 
 ### The O*NET Interest Profiler
 
-This project's design and its five-point like/dislike response scale are modeled on the O*NET Interest Profiler, a free vocational interest inventory introduced in 1999 as one of the U.S. Department of Labor's O*NET Career Exploration Tools. The O*NET Interest Profiler is sponsored by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA) and developed by the National Center for O*NET Development. Its original development was directed by Phil Lewis and David Rivkin, and James Rounds and colleagues at the University of Illinois at Urbana-Champaign led much of its later psychometric research.
+This project's six-scale structure and its five-point like/dislike response scale are modeled on the O*NET Interest Profiler, a free vocational interest inventory introduced in 1999 as one of the U.S. Department of Labor's O*NET Career Exploration Tools. The O*NET Interest Profiler is sponsored by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA) and developed by the National Center for O*NET Development. Its original development was directed by Phil Lewis and David Rivkin, and James Rounds and colleagues at the University of Illinois at Urbana-Champaign led much of its later psychometric research.
 
 - Lewis, P., & Rivkin, D. (1999). *Development of the O*NET Interest Profiler*. National Center for O*NET Development.
 - Rounds, J., Walker, C. M., Day, S. X., Hubert, L., Lewis, P., & Rivkin, D. (1999). *O*NET Interest Profiler: Reliability, validity, and self-scoring*. National Center for O*NET Development.
