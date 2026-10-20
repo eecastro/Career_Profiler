@@ -55,16 +55,6 @@ The only outside link is an optional pointer to the official O*NET Interest Prof
 | `careers.js` | The career profiles shown in the pop-ups |
 | `README.md` | This file |
 
-## Setting it up on GitHub Pages
-
-1. Sign in to GitHub and create a new **public** repository (for example, `career-interest-explorer`).
-2. Upload `index.html`, `careers.js`, and `README.md` to the top level of the repository. Keep the file names exactly as they are.
-3. Go to the repository's **Settings**, then **Pages**.
-4. Under "Build and deployment," set the source to **Deploy from a branch**, choose the `main` branch and the `/ (root)` folder, and select **Save**.
-5. After a minute or two, the site will be live at `https://YOUR-USERNAME.github.io/REPOSITORY-NAME/`. Share that link with students, or turn it into a QR code for the classroom.
-
-The page also works without GitHub. You can open `index.html` directly from a computer or a shared drive, as long as `careers.js` sits in the same folder.
-
 ## Trying it out
 
 To see a results page without answering all 48 questions, add `#demo` to the end of the address (for example, `https://YOUR-USERNAME.github.io/REPOSITORY-NAME/#demo`). This fills in random answers and jumps straight to the results. Remove `#demo` before sharing the link with students.
