@@ -129,7 +129,7 @@ O*NET® is a trademark of USDOL/ETA. This project is independent. It is not affi
 
 ### Developers
 
-- **[Your name]**, [your role and school or organization], [year]: concept, direction, and review
+- **Eric E Castro**, Psychology Department, St Ignatius College Prep, 2026: concept, direction, and review
 - **Claude** (Anthropic): code and initial written content, developed with and reviewed by the author above
 
 ## License
