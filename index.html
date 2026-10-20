@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Career Interest Explorer</title>
+<meta name="description" content="An anonymous career interest quiz based on Holland’s RIASEC model. See your interest code and careers that match it.">
+<style>
+  :root {
+    --paper: #F3F5F9;
+    --surface: #FFFFFF;
+    --ink: #18213A;
+    --muted: #5B6478;
+    --line: #D8DDE7;
+    --accent: #2D4FD6;
+    --accent-ink: #FFFFFF;
+    --warn: #B3261E;
+    --R: #B4472C; --I: #2563A8; --A: #8E3B9E;
+    --S: #23825A; --E: #A86E0C; --C: #566174;
+    --display: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Segoe UI", system-ui, sans-serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121826;
+      --surface: #1B2335;
+      --ink: #E8ECF4;
+      --muted: #A2ABBD;
+      --line: #2E384D;
+      --accent: #7E97FF;
+      --accent-ink: #0E1530;
+      --warn: #FF8A80;
+      --R: #E5866A; --I: #6AA6E8; --A: #C77DD6;
+      --S: #5CC293; --E: #E6B04A; --C: #A3AEC0;
+      color-scheme: dark;
+    }
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.55 var(--body);
+    -webkit-text-size-adjust: 100%;
+  }
+  main, .site-foot { max-width: 46rem; margin: 0 auto; padding: 0 1.25rem; }
+  main { padding-top: 2.5rem; padding-bottom: 3rem; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.15; margin: 0 0 .6rem; }
+  h1 { font-size: clamp(2rem, 6vw, 2.9rem); font-weight: 800; letter-spacing: -.01em; }
+  h2 { font-size: clamp(1.5rem, 4.5vw, 2rem); font-weight: 800; }
+  h3 { font-size: 1.25rem; font-weight: 700; margin-top: 2.5rem; }
+  p { margin: 0 0 1rem; max-width: 38rem; }
+  a { color: var(--accent); }
+  .muted { color: var(--muted); }
+  [hidden] { display: none !important; }
+
+  button, .btn {
+    font: 600 1rem/1 var(--body);
+    border-radius: .6rem;
+    padding: .9rem 1.4rem;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+    text-decoration: none;
+    display: inline-block;
+  }
+  button.secondary { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .4; cursor: default; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+  /* Intro */
+  .hero { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: center; }
+  @media (min-width: 640px) { .hero { grid-template-columns: 1.3fr 1fr; } }
+  .hero svg { width: 100%; max-width: 18rem; justify-self: center; height: auto; }
+  .facts { list-style: none; padding: 0; margin: 1.5rem 0 2rem; display: grid; gap: .5rem; }
+  .facts li { padding-left: 1.6rem; position: relative; }
+  .facts li::before {
+    content: ""; position: absolute; left: .2rem; top: .45rem;
+    width: .7rem; height: .8rem; background: var(--accent);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  }
+
+  /* Quiz */
+  .progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding: .75rem 0; margin-bottom: 1rem; }
+  .progress-row { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); margin-bottom: .4rem; }
+  .bar { height: .5rem; background: var(--line); border-radius: 1rem; overflow: hidden; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+  .prompt { font-family: var(--display); font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; }
+  fieldset.item {
+    border: 0; margin: 0 0 1rem; padding: 1.1rem 1rem 1rem;
+    background: var(--surface); border-radius: .9rem;
+    border-left: 4px solid transparent;
+  }
+  fieldset.item.missing { border-left-color: var(--warn); }
+  fieldset.item legend { float: left; width: 100%; padding: 0; margin-bottom: .8rem; font-weight: 600; font-size: 1.05rem; }
+  fieldset.item legend .num { color: var(--muted); font-weight: 500; margin-right: .35rem; }
+  .scale { clear: both; display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; }
+  .scale label { position: relative; cursor: pointer; }
+  .scale input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .scale span {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    min-height: 3rem; height: 100%; padding: .35rem .25rem;
+    border: 1.5px solid var(--line); border-radius: .55rem;
+    font-size: .82rem; line-height: 1.2; color: var(--muted);
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .scale label:hover span { border-color: var(--accent); }
+  .scale input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .scale input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 420px) { .scale span { font-size: .72rem; } }
+  .nav { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .error { color: var(--warn); font-weight: 600; min-height: 1.5rem; margin: .75rem 0 0; }
+
+  /* Results */
+  .code { display: flex; gap: .6rem; margin: .5rem 0 .25rem; }
+  .code .letter {
+    font-family: var(--display); font-weight: 800; font-size: clamp(3.5rem, 14vw, 5.5rem); line-height: 1;
+    width: 1.25em; height: 1.35em; display: grid; place-items: center; color: #fff;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  }
+  .code-names { font-family: var(--display); font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .chart-wrap { display: grid; grid-template-columns: 1fr; gap: 1.5rem; align-items: center; background: var(--surface); border-radius: 1rem; padding: 1.25rem; }
+  @media (min-width: 640px) { .chart-wrap { grid-template-columns: 1fr 1fr; } }
+  .chart-wrap svg { width: 100%; max-width: 20rem; height: auto; justify-self: center; }
+  .bars { list-style: none; padding: 0; margin: 0; display: grid; gap: .7rem; }
+  .bars .row { display: flex; justify-content: space-between; font-size: .92rem; margin-bottom: .2rem; }
+  .bars .row b { font-weight: 700; }
+  .bars .track { height: .65rem; background: var(--line); border-radius: 1rem; overflow: hidden; }
+  .bars .fill { height: 100%; border-radius: 1rem; }
+  .notes p { background: var(--surface); border-radius: .75rem; padding: .9rem 1rem; margin: 1rem 0 0; max-width: none; border-left: 4px solid var(--accent); }
+  .type-card { background: var(--surface); border-radius: 1rem; padding: 1.25rem 1.25rem 1rem; margin-top: 1rem; border-top: 6px solid var(--tc); }
+  .type-card h4 { font-family: var(--display); font-size: 1.3rem; margin: 0 0 .35rem; color: var(--tc); }
+  .type-card h5 { font-size: .95rem; margin: 1rem 0 .4rem; }
+  .type-card p { margin-bottom: .5rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: 0; }
+  .chips li a, .chips li span {
+    display: inline-block; padding: .35rem .7rem; border-radius: 2rem; font-size: .9rem;
+    border: 1.5px solid var(--line); color: var(--ink); text-decoration: none;
+  }
+  .chips li a:hover { border-color: var(--tc, var(--accent)); }
+  .chips li button {
+    background: transparent; color: var(--ink); border: 1.5px solid var(--line);
+    font: 500 .9rem/1.3 var(--body); padding: .35rem .7rem; border-radius: 2rem;
+  }
+  .chips li button:hover { border-color: var(--tc, var(--accent)); color: var(--tc, var(--accent)); }
+
+  dialog {
+    width: 100%; max-width: min(36rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem);
+    border: 0; border-radius: 1rem; padding: 0;
+    background: var(--surface); color: var(--ink); overflow: auto;
+  }
+  dialog::backdrop { background: rgba(10, 15, 30, .55); }
+  .dlg-body { padding: 1.5rem; border-top: 6px solid var(--tc, var(--accent)); }
+  .dlg-body h3 { margin: 0 0 .3rem; color: var(--tc, var(--ink)); outline: none; }
+  .dlg-body .listed { font-size: .9rem; color: var(--muted); margin-bottom: 1rem; }
+  .dlg-body h4 { font-size: 1rem; margin: 1.1rem 0 .35rem; }
+  .dlg-body ul { padding-left: 1.2rem; margin: 0; }
+  .dlg-body li { margin-bottom: .3rem; }
+  .dlg-body .fine { font-size: .82rem; color: var(--muted); margin-top: 1.25rem; }
+  .dlg-actions { margin-top: 1.25rem; text-align: right; }
+  .blend { background: var(--surface); border-radius: 1rem; padding: 1.25rem; margin-top: 1rem; }
+  details { margin-top: 1rem; }
+  summary { cursor: pointer; font-weight: 700; color: var(--accent); padding: .5rem 0; }
+  .next-steps { padding-left: 1.2rem; }
+  .next-steps li { margin-bottom: .5rem; }
+  .actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 2rem; }
+
+  .site-foot { padding-bottom: 2.5rem; font-size: .85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 1.25rem; }
+  .site-foot p { max-width: none; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media print {
+    :root { --paper: #fff; --surface: #fff; }
+    .actions, .site-foot, details summary { display: none; }
+    details > * { display: block; }
+    .type-card, .chart-wrap, .blend { break-inside: avoid; border: 1px solid #ccc; }
+    .code .letter { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bars .fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- Intro -->
+  <section id="intro">
+    <div class="hero">
+      <div>
+        <h1>What kind of work might you enjoy?</h1>
+        <p>Rate 48 everyday work activities by how much you’d like doing them. You’ll get a three-letter interest code and a list of careers people with that code often enjoy.</p>
+      </div>
+      <svg id="hero-hex" viewBox="-170 -150 340 300" role="img" aria-label="The six interest types arranged in a hexagon: Realistic, Investigative, Artistic, Social, Enterprising, Conventional"></svg>
+    </div>
+    <ul class="facts">
+      <li>Takes about 10 minutes.</li>
+      <li>Think only about whether you’d <em>like</em> the activity, not whether you’re good at it, have training for it, or how much it pays.</li>
+      <li>Completely anonymous: no names, no sign-in, nothing saved. Your answers never leave this device, and closing the page erases them.</li>
+    </ul>
+    <button id="start" type="button">Start the questions</button>
+  </section>
+
+  <!-- Questions -->
+  <section id="quiz" hidden aria-labelledby="quiz-heading">
+    <div class="progress">
+      <div class="progress-row"><span id="page-label">Page 1 of 8</span><span id="count-label">0 of 48 answered</span></div>
+      <div class="bar" role="progressbar" aria-label="Questions answered" aria-valuemin="0" aria-valuemax="48" aria-valuenow="0" id="progressbar"><span id="bar-fill"></span></div>
+    </div>
+    <h2 id="quiz-heading" class="prompt" tabindex="-1">How much would you like doing each activity?</h2>
+    <div id="items"></div>
+    <p class="error" id="error" role="alert"></p>
+    <div class="nav">
+      <button type="button" class="secondary" id="back">Back</button>
+      <button type="button" id="next">Next page</button>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="results" hidden>
+    <h2 id="results-heading" tabindex="-1">Your interest code</h2>
+    <div class="code" id="code" aria-hidden="true"></div>
+    <p class="code-names" id="code-names"></p>
+    <div class="chart-wrap">
+      <svg id="radar" viewBox="-170 -150 340 300" role="img" aria-label="Hexagon chart of your six interest scores"></svg>
+      <ol class="bars" id="bars" aria-label="Your scores, highest first"></ol>
+    </div>
+    <div class="notes" id="notes"></div>
+
+    <h3>Your top three interest areas</h3>
+    <p class="muted">Tap any career to read a short profile: what the job involves and how people usually get started in it.</p>
+    <div id="top"></div>
+
+    <h3 id="blend-heading">Careers that combine your top two</h3>
+    <div class="blend" id="blend"></div>
+
+    <details>
+      <summary>See your other three areas</summary>
+      <div id="rest"></div>
+    </details>
+
+    <h3>What to do next</h3>
+    <ul class="next-steps">
+      <li>Pick two or three careers that surprised you and read what a typical day looks like.</li>
+      <li>Talk with someone who does one of those jobs, or ask about shadowing them for a day.</li>
+      <li>Take the official <a href="https://www.mynextmove.org/explore/ip" target="_blank" rel="noopener">O*NET Interest Profiler</a> on My Next Move for a fuller result.</li>
+      <li>Remember that interests change. This is a starting point for exploring, not a verdict.</li>
+    </ul>
+
+    <div class="actions">
+      <button type="button" id="print">Print or save as PDF</button>
+      <button type="button" class="secondary" id="restart">Start over</button>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <p>Based on John Holland’s RIASEC model of career interests, the framework behind the O*NET Interest Profiler from the U.S. Department of Labor. This page is an informal approximation for exploration and is not the official O*NET tool. Everything runs in your browser: no data is collected, stored, or sent anywhere.</p>
+</footer>
+
+<dialog id="career-dialog" aria-labelledby="dlg-title">
+  <div class="dlg-body" id="dlg-body"></div>
+</dialog>
+
+<script src="careers.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Content ----------
+  var TYPES = ["R", "I", "A", "S", "E", "C"];
+
+  var INFO = {
+    R: {
+      name: "Realistic", nick: "Doers",
+      summary: "You like hands-on work with tools, machines, plants, or animals, and seeing a real, physical result at the end of the day.",
+      settings: "Workshops, job sites, the outdoors, and anywhere with equipment to run or fix.",
+      fields: ["Construction and skilled trades", "Manufacturing and engineering technology", "Agriculture, forestry, and natural resources", "Transportation and mechanics", "Public safety"],
+      careers: ["Electrician", "Carpenter", "Automotive technician", "HVAC technician", "Wind turbine technician", "Welder", "Aircraft mechanic", "Forester", "Civil engineering technician", "Firefighter"]
+    },
+    I: {
+      name: "Investigative", nick: "Thinkers",
+      summary: "You like figuring things out: asking questions, researching, analyzing information, and solving complicated problems.",
+      settings: "Labs, research teams, hospitals, and tech companies where ideas get tested.",
+      fields: ["Life and physical sciences", "Medicine and health science", "Computer science and data", "Engineering", "Research and analysis"],
+      careers: ["Biologist", "Chemist", "Software developer", "Data scientist", "Physician", "Pharmacist", "Environmental scientist", "Meteorologist", "Information security analyst", "Medical laboratory scientist"]
+    },
+    A: {
+      name: "Artistic", nick: "Creators",
+      summary: "You like self-expression and original ideas, and prefer work without a strict set of rules, whether through art, words, music, performance, or design.",
+      settings: "Studios, stages, newsrooms, design agencies, and freelance work.",
+      fields: ["Visual arts and design", "Writing, media, and communications", "Performing arts", "Architecture", "Film, audio, and game production"],
+      careers: ["Graphic designer", "Animator", "Writer", "Musician", "Actor", "Photographer", "Interior designer", "Film and video editor", "Fashion designer", "Architect"]
+    },
+    S: {
+      name: "Social", nick: "Helpers",
+      summary: "You like working with people: teaching, caring for, advising, or helping others grow and solve problems.",
+      settings: "Schools, clinics, hospitals, community organizations, and sports programs.",
+      fields: ["Education", "Healthcare and nursing", "Counseling and social services", "Community and nonprofit work", "Recreation and coaching"],
+      careers: ["Teacher", "Registered nurse", "School counselor", "Social worker", "Physical therapist", "Occupational therapist", "Speech-language pathologist", "Dental hygienist", "Coach", "Child life specialist"]
+    },
+    E: {
+      name: "Enterprising", nick: "Persuaders",
+      summary: "You like leading, persuading, and making decisions: starting projects, taking chances, and getting people behind a goal.",
+      settings: "Businesses, sales teams, law offices, government, and your own startup.",
+      fields: ["Business and management", "Sales and marketing", "Law and government", "Entrepreneurship", "Hospitality and real estate"],
+      careers: ["Entrepreneur", "Sales manager", "Marketing manager", "Lawyer", "Real estate agent", "Public relations specialist", "Lodging manager", "Financial advisor", "Restaurant manager", "Political campaign manager"]
+    },
+    C: {
+      name: "Conventional", nick: "Organizers",
+      summary: "You like order, detail, and clear procedures: working with data, records, and systems that need to be accurate.",
+      settings: "Offices, banks, hospitals, government agencies, and companies that run on careful records.",
+      fields: ["Accounting and finance", "Office and business administration", "Information management", "Health information and records", "Logistics and supply chain"],
+      careers: ["Accountant", "Payroll specialist", "Medical records specialist", "Paralegal", "Logistician", "Database administrator", "Court reporter", "Insurance underwriter", "Budget analyst", "Executive assistant"]
+    }
+  };
+
+  // Careers that blend two types (key uses R-I-A-S-E-C order)
+  var BLENDS = {
+    RI: ["Civil engineer", "Mechanical engineer", "Electrical engineer", "Surveyor", "Environmental engineering technician"],
+    RA: ["Landscape architect", "Chef", "Furniture maker", "Set and exhibit designer", "Jeweler"],
+    RS: ["Paramedic", "Physical therapist assistant", "Athletic trainer", "Respiratory therapist", "Firefighter"],
+    RE: ["Construction manager", "Farm and ranch manager", "Commercial pilot", "General contractor", "Police officer"],
+    RC: ["Quality control inspector", "CNC machinist", "Surveying technician", "Building inspector", "Pharmacy technician"],
+    IA: ["Architect", "User experience researcher", "Medical illustrator", "Sound engineer", "Video game designer"],
+    IS: ["Physician", "Psychologist", "Nurse practitioner", "Dietitian", "Science teacher"],
+    IE: ["Management consultant", "Market research analyst", "Economist", "Patent attorney", "Product manager"],
+    IC: ["Actuary", "Statistician", "Software quality assurance analyst", "Forensic science technician", "GIS specialist"],
+    AS: ["Art therapist", "Music teacher", "Drama teacher", "Librarian", "Speech-language pathologist"],
+    AE: ["Advertising manager", "Film producer", "Journalist", "Fashion buyer", "Art director"],
+    AC: ["Technical writer", "Editor", "Web designer", "Archivist", "Desktop publisher"],
+    SE: ["School principal", "Human resources manager", "Nonprofit director", "Recruiter", "Event planner"],
+    SC: ["Medical assistant", "Teaching assistant", "Dental assistant", "Customer service representative", "Medical secretary"],
+    EC: ["Financial advisor", "Bank branch manager", "Insurance sales agent", "Project manager", "Logistics manager"]
+  };
+
+  // Eight activities per type (original items modeled on O*NET-style activity statements)
+  var ITEMS = {
+    R: ["Repair a bicycle or a small engine", "Build shelves or furniture out of wood", "Operate heavy machinery like a forklift or bulldozer", "Install wiring or light fixtures in a house", "Plant and care for crops or trees", "Assemble electronic parts", "Maintain trails in a state park", "Fix a leaking pipe"],
+    I: ["Study how a disease spreads through a population", "Run experiments in a laboratory", "Look for patterns in a large set of data", "Investigate what caused a fire or an accident", "Research how the brain stores memories", "Come up with a theory to explain something in nature", "Study the movement of planets and stars", "Test water or soil samples for pollution"],
+    A: ["Write a short story or a script", "Design a logo or a poster", "Play an instrument in a band", "Act in a play or a film", "Draw or paint portraits", "Compose music or make beats", "Take photographs for a magazine", "Design clothing or costumes"],
+    S: ["Teach children how to read", "Help someone recover from an injury through exercise", "Talk a friend through a hard time", "Volunteer at a community shelter", "Coach a youth sports team", "Care for patients in a hospital", "Lead a support group", "Explain a lesson to a classmate who is struggling"],
+    E: ["Start your own business", "Convince customers to buy a product", "Manage a team of workers", "Run for student government or public office", "Negotiate a deal or a contract", "Lead a fundraising campaign", "Pitch an idea to investors", "Manage a restaurant or a store"],
+    C: ["Keep the financial records for a business", "Organize files so anything can be found quickly", "Proofread documents for errors", "Build and keep up a spreadsheet", "Process invoices and payments", "Schedule appointments and manage a calendar", "Count and track inventory in a warehouse", "Enter information into a database accurately"]
+  };
+
+  var SCALE = ["Strongly dislike", "Dislike", "Unsure", "Like", "Strongly like"];
+  var ANGLES = { R: -120, I: -60, A: 0, S: 60, E: 120, C: 180 };
+  var PER_PAGE = 6;
+
+  // Build question order: each page has one item of each type, in a shuffled (but fixed) order
+  var seed = 20261019;
+  function rand() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rand() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  var QUESTIONS = [];
+  for (var k = 0; k < 8; k++) {
+    shuffle(TYPES.slice()).forEach(function (t) { QUESTIONS.push({ type: t, text: ITEMS[t][k] }); });
+  }
+  var TOTAL = QUESTIONS.length;
+  var PAGES = Math.ceil(TOTAL / PER_PAGE);
+  var MAX = ITEMS.R.length * 5, MIN = ITEMS.R.length * 1;
+
+  // ---------- State ----------
+  var answers = new Array(TOTAL).fill(0);
+  var page = 0;
+
+  var $ = function (id) { return document.getElementById(id); };
+  function color(t) { return "var(--" + t + ")"; }
+  var CAREERS = window.CAREERS || {};
+
+  // ---------- Hexagon drawing ----------
+  function pt(t, r) {
+    var a = ANGLES[t] * Math.PI / 180;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  }
+  function hexPath(r) {
+    return TYPES.map(function (t) { return pt(t, r).map(function (n) { return n.toFixed(1); }).join(","); }).join(" ");
+  }
+  function drawHex(svg, scores) {
+    var R = 105, out = "";
+    [0.25, 0.5, 0.75, 1].forEach(function (f) {
+      out += '<polygon points="' + hexPath(R * f) + '" fill="none" stroke="var(--line)" stroke-width="' + (f === 1 ? 2 : 1) + '"/>';
+    });
+    TYPES.forEach(function (t) {
+      var p = pt(t, R);
+      out += '<line x1="0" y1="0" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
+    });
+    if (scores) {
+      var pts = TYPES.map(function (t) {
+        var v = Math.max(0.06, (scores[t] - MIN) / (MAX - MIN));
+        return pt(t, R * v).map(function (n) { return n.toFixed(1); }).join(",");
+      }).join(" ");
+      out += '<polygon points="' + pts + '" fill="var(--accent)" fill-opacity=".22" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>';
+      TYPES.forEach(function (t) {
+        var v = Math.max(0.06, (scores[t] - MIN) / (MAX - MIN));
+        var p = pt(t, R * v);
+        out += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="5" fill="' + color(t) + '"/>';
+      });
+    }
+    TYPES.forEach(function (t) {
+      var p = pt(t, R + 30);
+      var anchor = ANGLES[t] === 0 ? "start" : ANGLES[t] === 180 ? "end" : "middle";
+      var dx = ANGLES[t] === 0 ? -14 : ANGLES[t] === 180 ? 14 : 0;
+      out += '<text x="' + (p[0] + dx).toFixed(1) + '" y="' + (p[1] + 2).toFixed(1) + '" text-anchor="' + anchor + '" font-family="ui-rounded, system-ui, sans-serif">' +
+        '<tspan x="' + (p[0] + dx).toFixed(1) + '" font-size="26" font-weight="800" fill="' + color(t) + '">' + t + '</tspan>' +
+        '<tspan x="' + (p[0] + dx).toFixed(1) + '" dy="16" font-size="11" fill="var(--muted)">' + INFO[t].name + '</tspan></text>';
+    });
+    svg.innerHTML = out;
+  }
+
+  // ---------- Quiz ----------
+  function answeredCount() { return answers.filter(function (a) { return a > 0; }).length; }
+
+  function updateProgress() {
+    var n = answeredCount();
+    $("count-label").textContent = n + " of " + TOTAL + " answered";
+    $("page-label").textContent = "Page " + (page + 1) + " of " + PAGES;
+    $("bar-fill").style.width = (n / TOTAL * 100) + "%";
+    $("progressbar").setAttribute("aria-valuenow", n);
+  }
+
+  function renderPage() {
+    var start = page * PER_PAGE, html = "";
+    for (var i = start; i < Math.min(start + PER_PAGE, TOTAL); i++) {
+      html += '<fieldset class="item" id="item-' + i + '"><legend><span class="num">' + (i + 1) + '.</span>' + QUESTIONS[i].text + '</legend><div class="scale">';
+      SCALE.forEach(function (label, s) {
+        var v = s + 1;
+        html += '<label><input type="radio" name="q' + i + '" value="' + v + '"' + (answers[i] === v ? " checked" : "") + '><span>' + label + '</span></label>';
+      });
+      html += '</div></fieldset>';
+    }
+    $("items").innerHTML = html;
+    $("error").textContent = "";
+    $("back").style.visibility = page === 0 ? "hidden" : "visible";
+    $("next").textContent = page === PAGES - 1 ? "See my results" : "Next page";
+    updateProgress();
+  }
+
+  $("items").addEventListener("change", function (e) {
+    if (e.target.name && e.target.name.charAt(0) === "q") {
+      var i = parseInt(e.target.name.slice(1), 10);
+      answers[i] = parseInt(e.target.value, 10);
+      var fs = $("item-" + i);
+      if (fs) fs.classList.remove("missing");
+      updateProgress();
+    }
+  });
+
+  function goTo(p) {
+    page = p;
+    renderPage();
+    window.scrollTo(0, 0);
+    $("quiz-heading").focus({ preventScroll: true });
+  }
+
+  $("next").addEventListener("click", function () {
+    var start = page * PER_PAGE, missing = [];
+    for (var i = start; i < Math.min(start + PER_PAGE, TOTAL); i++) {
+      if (!answers[i]) { missing.push(i); $("item-" + i).classList.add("missing"); }
+    }
+    if (missing.length) {
+      $("error").textContent = "Answer the " + (missing.length === 1 ? "highlighted item" : missing.length + " highlighted items") + " to continue. Choose “Unsure” if you can’t decide.";
+      var first = $("item-" + missing[0]);
+      first.scrollIntoView({ block: "center" });
+      first.querySelector("input").focus({ preventScroll: true });
+      return;
+    }
+    if (page < PAGES - 1) goTo(page + 1);
+    else showResults();
+  });
+
+  $("back").addEventListener("click", function () { if (page > 0) goTo(page - 1); });
+
+  $("start").addEventListener("click", function () {
+    $("intro").hidden = true;
+    $("quiz").hidden = false;
+    goTo(0);
+  });
+
+  // ---------- Results ----------
+  function chipList(items, t) {
+    return '<ul class="chips"' + (t ? ' style="--tc:' + color(t) + '"' : "") + '>' + items.map(function (c) {
+      return '<li><button type="button" class="career-link" data-career="' + c + '">' + c + '</button></li>';
+    }).join("") + '</ul>';
+  }
+
+  // ---------- Career profiles (from careers.js) ----------
+  function whereListed(name) {
+    var singles = TYPES.filter(function (t) { return INFO[t].careers.indexOf(name) !== -1; });
+    var pairs = Object.keys(BLENDS).filter(function (k) { return BLENDS[k].indexOf(name) !== -1; });
+    return { singles: singles, pairs: pairs };
+  }
+
+  function openCareer(name) {
+    var c = CAREERS[name];
+    var where = whereListed(name);
+    var main = where.singles[0] || (where.pairs[0] && where.pairs[0].charAt(0)) || null;
+    var parts = where.singles.map(function (t) { return INFO[t].name; })
+      .concat(where.pairs.map(function (k) { return INFO[k.charAt(0)].name + " + " + INFO[k.charAt(1)].name; }));
+
+    var html = '<h3 id="dlg-title" tabindex="-1">' + name + '</h3>';
+    if (parts.length) html += '<p class="listed">Fits: ' + parts.join("; ") + '</p>';
+    if (c) {
+      html += '<p>' + c.about + '</p>' +
+        '<h4>What you might do</h4><ul>' + c.tasks.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>' +
+        '<h4>How people usually get started</h4><p>' + c.path + '</p>' +
+        '<p class="fine">Training paths are typical for the United States and vary by state and employer. Pay and job outlook change over time, so ask a school counselor for current figures.</p>';
+    } else {
+      html += '<p>A profile for this career hasn’t been written yet.</p>';
+    }
+    html += '<div class="dlg-actions"><button type="button" id="dlg-close">Close</button></div>';
+
+    var body = $("dlg-body");
+    body.style.setProperty("--tc", main ? color(main) : "var(--accent)");
+    body.innerHTML = html;
+    var dlg = $("career-dialog");
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+    $("dlg-title").focus();
+  }
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest(".career-link");
+    if (btn) { openCareer(btn.getAttribute("data-career")); return; }
+    var dlg = $("career-dialog");
+    if (e.target.id === "dlg-close" || e.target === dlg) {
+      if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
+    }
+  });
+
+  function typeCard(t, score) {
+    var I = INFO[t];
+    return '<article class="type-card" style="--tc:' + color(t) + '">' +
+      '<h4>' + I.name + ' (' + t + ') · ' + I.nick + '</h4>' +
+      '<p class="muted">Score ' + score + ' of ' + MAX + '</p>' +
+      '<p>' + I.summary + '</p>' +
+      '<p><strong>Where this work happens:</strong> ' + I.settings + '</p>' +
+      '<h5>Fields to explore</h5><ul class="chips">' + I.fields.map(function (f) { return '<li><span>' + f + '</span></li>'; }).join("") + '</ul>' +
+      '<h5>Example careers</h5>' + chipList(I.careers, t) +
+      '</article>';
+  }
+
+  function showResults() {
+    var scores = {};
+    TYPES.forEach(function (t) { scores[t] = 0; });
+    answers.forEach(function (v, i) { scores[QUESTIONS[i].type] += v; });
+
+    var ranked = TYPES.slice().sort(function (a, b) {
+      return scores[b] - scores[a] || TYPES.indexOf(a) - TYPES.indexOf(b);
+    });
+    var top = ranked.slice(0, 3);
+
+    // Code letters
+    $("code").innerHTML = top.map(function (t) {
+      return '<span class="letter" style="background:' + color(t) + '">' + t + '</span>';
+    }).join("");
+    $("code-names").textContent = top.map(function (t) { return INFO[t].name; }).join(", ");
+    $("results-heading").textContent = "Your interest code is " + top.join("");
+
+    // Chart and bars
+    drawHex($("radar"), scores);
+    $("bars").innerHTML = ranked.map(function (t) {
+      var pct = ((scores[t] - MIN) / (MAX - MIN) * 100).toFixed(0);
+      return '<li><div class="row"><span><b style="color:' + color(t) + '">' + t + '</b> ' + INFO[t].name + '</span><span>' + scores[t] + ' / ' + MAX + '</span></div>' +
+        '<div class="track"><div class="fill" style="width:' + Math.max(3, pct) + '%;background:' + color(t) + '"></div></div></li>';
+    }).join("");
+
+    // Notes about ties and flat profiles
+    var notes = [];
+    var spread = scores[ranked[0]] - scores[ranked[5]];
+    if (scores[ranked[2]] === scores[ranked[3]]) {
+      var tied = ranked.filter(function (t) { return scores[t] === scores[ranked[2]]; });
+      notes.push("Your third letter is a tie between " + tied.map(function (t) { return INFO[t].name; }).join(" and ") + ". Explore careers in each.");
+    }
+    if (scores[ranked[0]] === scores[ranked[1]]) {
+      notes.push("Your top two areas scored exactly the same, so treat them as equally strong.");
+    }
+    if (spread <= 6) {
+      notes.push("Your scores are close together, which means you have broad interests and no single area stands out yet. That’s common. Try ranking the example careers below by gut feeling to find what pulls you most.");
+    }
+    if (scores[ranked[0]] <= 20) {
+      notes.push("You didn’t strongly like many of these activities. That often means you’re still figuring out what you enjoy. Your top areas are still the best places to start exploring.");
+    }
+    $("notes").innerHTML = notes.map(function (n) { return "<p>" + n + "</p>"; }).join("");
+
+    // Top three cards
+    $("top").innerHTML = top.map(function (t) { return typeCard(t, scores[t]); }).join("");
+
+    // Blend of top two
+    var pair = [top[0], top[1]].sort(function (a, b) { return TYPES.indexOf(a) - TYPES.indexOf(b); }).join("");
+    $("blend-heading").textContent = "Careers that combine " + INFO[top[0]].name + " and " + INFO[top[1]].name;
+    $("blend").innerHTML = '<p>These jobs draw on both of your strongest interest areas.</p>' + chipList(BLENDS[pair]);
+
+    // Remaining three
+    $("rest").innerHTML = ranked.slice(3).map(function (t) { return typeCard(t, scores[t]); }).join("");
+
+    $("quiz").hidden = true;
+    $("results").hidden = false;
+    window.scrollTo(0, 0);
+    $("results-heading").focus({ preventScroll: true });
+  }
+
+  $("print").addEventListener("click", function () { window.print(); });
+  $("restart").addEventListener("click", function () {
+    answers = new Array(TOTAL).fill(0);
+    page = 0;
+    $("results").hidden = true;
+    $("intro").hidden = false;
+    window.scrollTo(0, 0);
+  });
+
+  // ---------- Init ----------
+  drawHex($("hero-hex"), null);
+
+  // For testing: open the page with #demo at the end of the URL to jump straight to a random result
+  if (location.hash === "#demo") {
+    answers = answers.map(function () { return 1 + Math.floor(Math.random() * 5); });
+    $("intro").hidden = true;
+    showResults();
+  }
+})();
+</script>
+</body>
+</html>
